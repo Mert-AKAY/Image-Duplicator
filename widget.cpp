@@ -17,7 +17,7 @@ Widget::~Widget()
 void Widget::Create_LineEdits(int count)
 {
     ui->stackedWidget->setCurrentIndex(1);
-    ui->stackedWidget->widget(1)->setGeometry(0,0,800,500);
+    ui->stackedWidget->widget(1)->setGeometry(0,0,800,750);
     update();
 
     for(int i = 0; i < count; i++)
@@ -51,6 +51,7 @@ void Widget::Create_LineEdits(int count)
 
     ui->enter_btn->setEnabled(false);
     ui->layer_count_spinbox->setEnabled(false);
+
 }
 QStringList Widget::Read_Images_Name(QString Directory_Path)
 {
@@ -85,7 +86,7 @@ void Widget::clicked_GetAllPath(){
             result[size]=SourcePathsLineEdits.at(i)->text()+"\\"+result[size];
         }
         SourcePaths <<result;
-        qDebug()<<result;
+        //qDebug()<<result;
     }
     this->GetAllPathsButton->setEnabled(false);
     for(int count=0;count<SourcePathsLineEdits.length();count++){
@@ -104,12 +105,14 @@ void Widget::clicked_GetAllPath(){
     StartButton->show();
     StartButton->setEnabled(true);
     for(int val=0;val<SourcePaths.length();val++){
+        qDebug()<<"VAL:"<<SourcePaths.at(val).length();
         max_res=max_res*SourcePaths.at(val).length();
+         qDebug()<<"max_res:"<<max_res;
     }
     QLabel *res_info=new QLabel(ui->stackedWidget->widget(2));
     res_info->setFont(QFont( "Times New Roman", 12, QFont::Bold));
     res_info->setText("Maximum Üretilebilecek NFT sayısı->"+QString::number(max_res));
-    res_info->setGeometry(200,350,300,40);
+    res_info->setGeometry(150,350,400,40);
     res_info->setAlignment(Qt::AlignCenter);
     res_info->show();
 
@@ -131,6 +134,8 @@ void Widget::clicked_GetAllPath(){
 }
 
 void Widget::paste_all_layer(){
+    qDebug()<<"Basıldı";
+qDebug()<<"NFT Counter"<<max_res<<":"<<Enter_NFT_Size->text().toInt();
     if(Enter_NFT_Size->text().toInt()<=max_res){
         if(input_info!=NULL){
             input_info->setText("Girilen NFT sayısı legal.");
@@ -140,11 +145,11 @@ void Widget::paste_all_layer(){
             for(int i=0;i<SourcePaths.length();i++){
                 if(i==SourcePaths.length()-1){
                     currentimagedata.append(QString::number(Generate_Random_Number(0,SourcePaths.at(i).length())));
-                    qDebug()<<"data:"<<currentimagedata;
+                    //qDebug()<<"data:"<<currentimagedata;
                 }
                 else{
                     currentimagedata.append(QString::number(Generate_Random_Number(0,SourcePaths.at(i).length()))+"-");
-                    qDebug()<<"data:"<<currentimagedata;
+                    //qDebug()<<"data:"<<currentimagedata;
                 }
             }
             if(ExistingImages.length()==Enter_NFT_Size->text().toInt()){
@@ -154,8 +159,8 @@ void Widget::paste_all_layer(){
                 ExistingImages.append(currentimagedata);
             }
         }
-        qDebug()<<"All result"<<ExistingImages;
-        qDebug()<<"size"<<ExistingImages.length();
+        //qDebug()<<"All result"<<ExistingImages;
+        //qDebug()<<"size"<<ExistingImages.length();
         NFT_Results_Producer();
     }
     else{
@@ -194,7 +199,7 @@ void Widget::NFT_Results_Producer()
         QList<QPixmap> Current_Pasted_Images;
         QString Current_Filename;
         for(int current_count=0;current_count<layer_count;current_count++){
-            qDebug()<<SourcePaths.at(current_count).at(ExistingImages.at(nft_count).split("-").at(current_count).toInt());
+            //qDebug()<<SourcePaths.at(current_count).at(ExistingImages.at(nft_count).split("-").at(current_count).toInt());
             Current_Pasted_Images<<Convert_QPixmap( SourcePaths.at(current_count).at(ExistingImages.at(nft_count).split("-").at(current_count).toInt()));
             if(current_count!=layer_count-1){
                 Current_Filename.append(SourcePaths.at(current_count).at(ExistingImages.at(nft_count).split("-").at(current_count).toInt()).split("\\").last().replace(".png","")+"_");
@@ -211,7 +216,9 @@ void Widget::NFT_Results_Producer()
                 temp_image=Paste_Image_to_Another_Image_withouturl(temp_image,Current_Pasted_Images.at(j+1));
             }
         }
-        QString filename=ResultsPathLineEdit->text()+"\\"+"Result"+QString::number(nft_count)+"_"+Current_Filename+".png";
+        QString filename=ResultsPathLineEdit->text()+"\\"+"Result"+QString::number(nft_count+2000)+"_"+Current_Filename+".png";
+//        QPixmap BG= Choose_BG("D:\\yeninftproje\\work\\resizesources\\backgrounds");
+//        Save_Image(filename,Paste_Image_to_Another_Image_withouturl(BG,temp_image));
         Save_Image(filename,temp_image);
         Current_Pasted_Images.clear();
         Current_Filename.clear();
@@ -236,14 +243,19 @@ QPixmap Widget::Paste_Image_to_Another_Image_withouturl(QPixmap background_image
 
 void Widget::write_data_json_file()
 {
-    qDebug()<<"11111";
+    //qDebug()<<"11111";
     QStringList ResultNames= Read_Images_Name(ResultsPathLineEdit->text());
     QJsonDocument document;
     QJsonObject content;
     for(int count=0;count<ResultNames.length();count++){
         QJsonObject CurrentObject;
+        layer_count=ResultNames.at(count).split("_").count()-1;
+        qDebug()<<"ress"<<count;
+        qDebug()<<"res name"<<ResultNames.at(count);
         for(int i=1;i<=layer_count;i++){
-            CurrentObject.insert(QString(ResultNames.at(count).split("_").at(i).split("-").at(1)).replace(".png","").toUpper(),QString(ResultNames.at(count).split("_").at(i).split("-").at(0)).replace(".png",""));
+            QRegExp re;
+            re.setPattern(QLatin1Literal("[0-9]"));
+            CurrentObject.insert(QString(ResultNames.at(count).split("_").at(i).split("-").at(1)).replace(".png","").replace(re,"").toUpper(),QString(ResultNames.at(count).split("_").at(i).split("-").at(0)).replace(".png","").replace(re,""));
         }
         content.insert(ResultNames.at(count).split("_").at(0),CurrentObject);
     }
@@ -259,8 +271,16 @@ void Widget::write_data_json_file()
     }
     else
     {
-        qDebug()<< "file open failed: ";
+        //qDebug()<< "file open failed: ";
     }
+}
+
+QPixmap Widget::Choose_BG(QString path)
+{
+    //QStringList bg_names= Read_Images_Name("D:\\yeninftproje\\work\\resizesources\\backgrounds");
+    QStringList bg_names= Read_Images_Name(path);
+    QPixmap result(path+"\\"+bg_names.at(Generate_Random_Number(0,bg_names.length())));
+    return result;
 }
 
 void Widget::on_pushButton_clicked()

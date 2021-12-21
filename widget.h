@@ -40,7 +40,7 @@ public:
     QLabel *input_info;
     int result_counter=0;
     int ResultCount=0;
-    int max_res=1;
+    long long int max_res=1;
     int layer_count=0;
 
 private slots:
@@ -69,6 +69,8 @@ private slots:
     QPixmap Paste_Image_to_Another_Image_withouturl(QPixmap background_image, QPixmap source_image);
 
     void write_data_json_file();
+
+    QPixmap Choose_BG(QString path);
 
     void on_pushButton_clicked();
 
